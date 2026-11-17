@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#111111">
+<title>ULTRA GALLERY ORANGE EDITION</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101010;color:white;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+:root{--orange:#ff861f;--muted:#999}
+header{padding:25px 20px 18px}
+.brand{font-size:25px;font-weight:850;letter-spacing:1px}
+.brand span{color:var(--orange)}
+.subtitle{font-size:12px;color:#aaa;margin-top:5px}
+.topline{display:flex;justify-content:space-between;align-items:center}
+.refresh{
+ background:#252525;border:0;color:var(--orange);
+ border-radius:50%;width:40px;height:40px;font-size:22px
+}
+.tabs{
+ display:flex;gap:9px;padding:12px 17px;
+ position:sticky;top:0;background:#101010;z-index:2
+}
+.tab{
+ border:0;border-radius:30px;padding:11px 19px;
+ color:#aaa;background:#222;font-weight:700
+}
+.tab.active{background:var(--orange);color:#171717}
+.info{padding:8px 19px 14px;color:#aaa;font-size:13px}
+.grid{
+ display:grid;grid-template-columns:repeat(3,1fr);
+ gap:5px;padding:0 7px 30px
+}
+.tile{
+ aspect-ratio:1;background:#222;border-radius:9px;
+ overflow:hidden;position:relative
+}
+.tile img,.tile video{width:100%;height:100%;object-fit:cover}
+.video-tag{
+ position:absolute;bottom:7px;right:7px;
+ background:#000a;padding:5px 8px;border-radius:20px;
+ font-size:10px
+}
+.empty{
+ grid-column:1/-1;text-align:center;padding:65px 20px;color:#999
+}
+.empty strong{display:block;color:white;font-size:18px;margin-bottom:8px}
+.viewer{
+ display:none;position:fixed;inset:0;background:#050505;
+ z-index:10;align-items:center;justify-content:center
+}
+.viewer.open{display:flex}
+.viewer img,.viewer video{max-width:100%;max-height:85vh}
+.close{
+ position:absolute;top:25px;right:18px;background:#292929;
+ color:white;border:0;border-radius:25px;padding:12px 17px
+}
+
+/* OPENING ANIMATION */
+#intro{
+ position:fixed;inset:0;background:#080808;z-index:100;
+ display:flex;align-items:center;justify-content:center;
+ flex-direction:column;
+ animation:fadeOut .7s ease 4.3s forwards
+}
+.boot-logo{
+ font-size:35px;font-weight:900;letter-spacing:3px;
+ color:white;animation:logoIn 1s ease both
+}
+.boot-logo span{color:var(--orange)}
+.boot-line{
+ width:125px;height:3px;background:#292929;
+ margin-top:30px;border-radius:10px;overflow:hidden
+}
+.boot-progress{
+ height:100%;width:0;background:var(--orange);
+ animation:progress 3.5s ease .5s forwards
+}
+.boot-text{
+ color:#888;font-size:10px;letter-spacing:4px;
+ margin-top:17px;animation:blink 1s infinite
+}
+.boot-circle{
+ width:76px;height:76px;border:3px solid #333;
+ border-top-color:var(--orange);border-radius:50%;
+ margin-bottom:28px;animation:spin 1.5s linear infinite
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes logoIn{
+ from{opacity:0;transform:scale(.7);letter-spacing:12px}
+ to{opacity:1;transform:scale(1);letter-spacing:3px}
+}
+@keyframes progress{to{width:100%}}
+@keyframes blink{50%{opacity:.35}}
+@keyframes fadeOut{to{opacity:0;visibility:hidden}}
+</style>
+</head>
+
+<body>
+
+<div id="intro">
+ <div class="boot-circle"></div>
+ <div class="boot-logo">ULTRA <span>GALLERY</span></div>
+ <div class="boot-line"><div class="boot-progress"></div></div>
+ <div class="boot-text">POWERING YOUR MEMORIES</div>
+</div>
+
+<header>
+ <div class="topline">
+  <div>
+   <div class="brand">ULTRA <span>GALLERY</span></div>
+   <div class="subtitle">Your Memories. Your Device.</div>
+  </div>
+  <button class="refresh" onclick="refreshMedia()">↻</button>
+ </div>
+</header>
+
+<nav class="tabs">
+ <button class="tab active" onclick="changeTab('all',this)">All</button>
+ <button class="tab" onclick="changeTab('image',this)">Photos</button>
+ <button class="tab" onclick="changeTab('video',this)">Videos</button>
+</nav>
+
+<div class="info" id="count">Loading your gallery...</div>
+<main class="grid" id="gallery">
+ <div class="empty">
+  <strong>ULTRA GALLERY</strong>
+  Menunggu akses media telefon...
+ </div>
+</main>
+
+<div class="viewer" id="viewer" onclick="closeViewer()">
+ <button class="close">Close ✕</button>
+ <div id="viewContent"></div>
+</div>
+
+<script>
+let media=[];
+let currentTab='all';
+
+function loadPhoneMedia(raw){
+ try{
+  media=typeof raw==='string'?JSON.parse(raw):raw;
+  render();
+ }catch(e){
+  document.getElementById('count').textContent='Unable to load media';
+ }
+}
+
+function refreshMedia(){
+ if(window.AndroidGallery){
+  AndroidGallery.refresh();
+ }else{
+  document.getElementById('count').textContent=
+  'Open this app on your Android phone to load media.';
+ }
+}
+
+function changeTab(tab,button){
+ currentTab=tab;
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+ button.classList.add('active');
+ render();
+}
+
+function render(){
+ const items=media.filter(x=>currentTab==='all'||x.type===currentTab);
+ document.getElementById('count').textContent=items.length+' ITEMS';
+ const gallery=document.getElementById('gallery');
+ gallery.innerHTML='';
+
+ if(!items.length){
+  gallery.innerHTML='<div class="empty"><strong>No media yet</strong>Benarkan akses Photos dan Videos untuk melihat media telefon.</div>';
+  return;
+ }
+
+ items.forEach(item=>{
+  const tile=document.createElement('div');
+  tile.className='tile';
+
+  const element=document.createElement(item.type==='image'?'img':'video');
+  element.src=item.uri;
+
+  if(item.type==='video'){
+   element.muted=true;
+   element.playsInline=true;
+   element.preload='metadata';
+   const badge=document.createElement('span');
+   badge.className='video-tag';
+   badge.textContent='▶ VIDEO';
+   tile.appendChild(badge);
+  }
+
+  tile.appendChild(element);
+  tile.onclick=()=>openMedia(item);
+  gallery.appendChild(tile);
+ });
+}
+
+function openMedia(item){
+ const content=document.getElementById('viewContent');
+ content.innerHTML='';
+ const element=document.createElement(item.type==='image'?'img':'video');
+ element.src=item.uri;
+ if(item.type==='video'){
+  element.controls=true;
+  element.autoplay=true;
+ }
+ content.appendChild(element);
+ document.getElementById('viewer').classList.add('open');
+}
+
+function closeViewer(){
+ document.getElementById('viewer').classList.remove('open');
+ document.getElementById('viewContent').innerHTML='';
+}
+</script>
+
+</body>
+</html>
