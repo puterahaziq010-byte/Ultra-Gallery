@@ -1,4 +1,4 @@
-name: Build ULTRA GALLERY APK
+ild ULTRA GALLERY APK
 
 on:
   workflow_dispatch:
@@ -28,4 +28,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Ultra-Gallery-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug
